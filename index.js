@@ -5,7 +5,8 @@ const fs = require("fs")//use to read json files
 
 //tell express that were going to use ejs as the view engine
 app.set("view engine", "ejs");
-app.use(ejsLayout);
+app.use(ejsLayout); //tells express to let us use a layout template
+app.use(express.urlencoded({extended: false})) // body parser middleware
 
 app.get("/", (req,res) => {
     res.render("home");
@@ -22,6 +23,12 @@ app.get("/dinosaurs", (req,res) => {
     res.render("dinosaurs/index", {myDinos: dinoData});
 })
 
+//get the new dino form
+app.get("/dinosaurs/new", (req, res) => {
+    res.render("dinosaurs/new");
+
+})
+
 //show route
 app.get("/dinosaurs/:id", (req, res) => {
     //get the json from dinosaurs.json
@@ -33,5 +40,18 @@ app.get("/dinosaurs/:id", (req, res) => {
     //grab the 
     res.render("dinosaurs/show", {myDino: dinoData[dinoIndex]})
 })
+
+//post a new dino
+app.post("/dinosaurs", (req,res) => {
+    let dinosaurs = fs.readFileSync("./dinosaurs.json");
+    let dinoData = JSON.parse(dinosaurs); //dino data is an array
+    //push new dino to the array
+    dinoData.push(req.body);
+    //convert dinodata back to json and write to dinosaurs.json file
+    fs.writeFileSync("./dinosaurs.json", JSON.stringify(dinoData)); //does the opposite of JSON parse
+    // redirect to the index GET route
+    res.redirect("/dinosaurs");
+})
+
 
 app.listen(8000);
